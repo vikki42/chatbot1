@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with Siri</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div id="chat-window">
+            <div id="chat-history"></div>
+        </div>
+        <div id="input-area">
+            <input type="text" id="user-input" placeholder="Type your message here...">
+            <button id="send-button">Send</button>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('#send-button').click(function() {
+                sendMessage();
+            });
+            $('#user-input').keypress(function(e) {
+                if (e.which == 13) {
+                    sendMessage();
+                }
+            });
+        });
+
+        function sendMessage() {
+            var message = $('#user-input').val().trim();
+            if (!message) {
+                alert('Please enter a message');
+                return;
+            }
+
+            $('#chat-history').append('<div class="message user-message"><span>You: </span>' + message + '</div>');
+            $('#user-input').val('');
+
+            $.ajax({
+                url: '/send_message',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ message: message }),
+                success: function(response) {
+                    $('#chat-history').append('<div class="message siri-message"><span>Siri: </span>' + response.response + '</div>');
+                    $('#chat-history').scrollTop($('#chat-history')[0].scrollHeight);
+                },
+                error: function(response) {
+                    alert(response.responseJSON.error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
